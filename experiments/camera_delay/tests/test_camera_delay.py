@@ -9,17 +9,39 @@ import unittest
 
 import numpy as np
 
+
+ROOT = Path(__file__).resolve().parents[3]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from experiments.camera_delay import run_eval
 from experiments.camera_delay.analyze import collect_records
 from experiments.camera_delay.config import RunConfig
 from experiments.camera_delay.perturbation import VisionDelay
 
 
-ROOT = Path(__file__).resolve().parents[3]
 RUN_EVAL = ROOT / "experiments" / "camera_delay" / "run_eval.py"
 
 
 class CameraDelayDriverTests(unittest.TestCase):
+    def test_analyzer_ignores_incomplete_result_files(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="camera-delay-analysis-") as tmp:
+            result_dir = Path(tmp) / "delay_1"
+            result_dir.mkdir()
+            (result_dir / "_result.json").write_text(
+                json.dumps(
+                    {
+                        "complete": False,
+                        "success_rate": 0.0,
+                        "score": 0.0,
+                        "eval_time": 0,
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            self.assertEqual(collect_records([tmp]), [])
+
     def test_analyzer_ignores_incomplete_summary_runs(self) -> None:
         with tempfile.TemporaryDirectory(prefix="camera-delay-analysis-") as tmp:
             summary_path = Path(tmp) / "summary.json"

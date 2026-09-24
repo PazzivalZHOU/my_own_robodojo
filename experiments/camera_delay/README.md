@@ -174,15 +174,22 @@ policy_input_dir, record_fps`。
 ## 8. macOS 本地构建验证（不启动 Isaac）
 
 本地只负责代码构建与 dry-run；真实实验只在 Linux GPU 服务器上执行。在含
-PyYAML/NumPy 的 Python 环境中：
+PyYAML/NumPy 的 Python 环境中，从仓库根目录执行：
 
 ```bash
+cd <RoboDojo 根目录>
 python -m unittest discover -s experiments/camera_delay/tests -v
 python experiments/camera_delay/run_eval.py \
   --task stack_blocks --ckpt PLACEHOLDER --policy-env RoboDojo --delays 0,1 --dry-run
 bash scripts/robodojo.sh eval \
   --policy-dir XPolicyLab/policy/ACT --task stack_blocks --ckpt PLACEHOLDER \
   --policy-env RoboDojo --eval-env RoboDojo --eval-num 1 --dry-run
+```
+
+测试文件也可直接执行：
+
+```bash
+python experiments/camera_delay/tests/test_camera_delay.py -v
 ```
 
 dry-run 只验证配置和命令链，不能代替服务器上的单回合冒烟。

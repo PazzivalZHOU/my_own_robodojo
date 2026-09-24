@@ -70,6 +70,10 @@ git submodule status --recursive
 test -f third_party/IsaacLab/isaaclab.sh
 ```
 
+`origin/main` 的正常同步路径应当可 fast-forward；若 `git merge --ff-only` 拒绝执行，
+先停止并检查 `git status` 与 `git log --oneline --graph --decorate -10`，不要把
+`reset --hard` 当作常规同步手段。没有服务器本地改动时，重新 clone 是最稳妥的恢复方式。
+
 ---
 
 ## 3. 运行实验
@@ -108,7 +112,15 @@ assert (summary_path.parent / "delay_0" / "_result.json").is_file()
 print(f"PASS: {summary_path}")
 PY
 
-# 3.3 正式扫描（0/1/2/4；耗时约为单次评估的 4 倍）
+# 3.3 hook 冒烟：跑 1 帧延迟、1 个回合，确认 monkeypatch 在真实 Isaac 进程中安装
+# 两条命令都必须退出 0；日志必须出现 installed: delay_frames=1
+set -o pipefail
+python experiments/camera_delay/run_eval.py \
+  --task stack_blocks --ckpt <CKPT> --policy-env <POLICY_ENV> \
+  --delays 1 --eval-num 1 2>&1 | tee /home/ypwen/zyh/camera_delay_hook_smoke.log
+grep -F "[camera_delay] installed: delay_frames=1" /home/ypwen/zyh/camera_delay_hook_smoke.log
+
+# 3.4 正式扫描（0/1/2/4；耗时约为单次评估的 4 倍）
 python experiments/camera_delay/run_eval.py \
   --task stack_blocks --ckpt <CKPT> --policy-env <POLICY_ENV> \
   --delays 0,1,2,4 --eval-num <N>
@@ -125,7 +137,7 @@ experiments/camera_delay/results/<时间戳>/
 
 （更细的参数在 `configs/base.yaml` / `configs/delays.yaml`。）
 
-### 3.4 出对比表/图
+### 3.5 出对比表/图
 
 ```bash
 python experiments/camera_delay/analyze.py --results experiments/camera_delay/results/<时间戳>
@@ -190,8 +202,9 @@ cd /home/ypwen/zyh/my_own_robodojo && git fetch origin && git merge --ff-only or
 # 校验 hook
 grep -n ROBODOJO_CLIENT_ENTRY scripts/eval_policy.sh
 
-# 冒烟 → 正式
+# 基线冒烟 → hook 冒烟 → 正式
 python experiments/camera_delay/run_eval.py --task <T> --ckpt <C> --policy-env <E> --delays 0 --eval-num 1
+python experiments/camera_delay/run_eval.py --task <T> --ckpt <C> --policy-env <E> --delays 1 --eval-num 1
 python experiments/camera_delay/run_eval.py --task <T> --ckpt <C> --policy-env <E> --delays 0,1,2,4 --eval-num <N>
 
 # 回滚

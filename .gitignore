@@ -22,6 +22,7 @@ experiments/camera_delay/results/
 # Local scratch
 Dev/
 ignore/
+robodojo_notes/
 .cache/
 
 # Editor / agent scratch (never committed)

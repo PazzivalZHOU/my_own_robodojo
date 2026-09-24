@@ -61,8 +61,11 @@ def _delay_from_result_path(path: str) -> Optional[int]:
     return int(match.group(1)) if match else None
 
 
-def _record_from_result_file(path: str, delay: int) -> Dict[str, Any]:
+def _record_from_result_file(path: str, delay: int) -> Optional[Dict[str, Any]]:
     data = _load_json(path)
+    if data.get("complete") is False:
+        print(f"[analyze] WARNING: skipping incomplete result: {path}", file=sys.stderr)
+        return None
     details = data.get("details") or {}
     n_success = None
     n_total = None
@@ -90,7 +93,9 @@ def collect_records(paths: List[str]) -> List[Dict[str, Any]]:
         if os.path.isfile(path):
             delay = _delay_from_result_path(path)
             if delay is not None:
-                records.append(_record_from_result_file(path, delay))
+                record = _record_from_result_file(path, delay)
+                if record is not None:
+                    records.append(record)
             continue
         if not os.path.isdir(path):
             print(f"[analyze] WARNING: not found: {path}", file=sys.stderr)
@@ -99,7 +104,9 @@ def collect_records(paths: List[str]) -> List[Dict[str, Any]]:
         for result_file in found:
             delay = _delay_from_result_path(result_file)
             if delay is not None:
-                records.append(_record_from_result_file(result_file, delay))
+                record = _record_from_result_file(result_file, delay)
+                if record is not None:
+                    records.append(record)
 
     if records:
         return records
