@@ -143,7 +143,11 @@ MAX_BASH_RETRIES="${ROBODOJO_MAX_BASH_RETRIES:-10}"
 attempt=0
 while : ; do
   set +e
-  python -u src/eval_client/main.py \
+  # ROBODOJO_CLIENT_ENTRY is a generic, opt-in override for the sim-client
+  # entrypoint. It is used by experiments/camera_delay/ (see that README's
+  # "Upstream change record"); when unset it expands to the stock entrypoint,
+  # so baseline behavior is byte-for-byte unchanged.
+  python -u "${ROBODOJO_CLIENT_ENTRY:-src/eval_client/main.py}" \
     --task_name "$task_name" \
     --env_cfg_type "$env_cfg_type" \
     --num_envs "$num_envs" \

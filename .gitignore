@@ -13,6 +13,12 @@ smoke_results/
 docker/smoke_logs/
 data/
 
+# camera_delay experiment artifacts (videos/metrics; never commit)
+experiments/camera_delay/results/
+
+# macOS
+.DS_Store
+
 # Local scratch
 Dev/
 ignore/

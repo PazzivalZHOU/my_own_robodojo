@@ -1,0 +1,22 @@
+# Camera-delay experiment -- delay sweep and perturbation options.
+#
+# Consumed by experiments/camera_delay/run_eval.py and merged into base.yaml.
+# Maps to RunConfig / DelayConfig fields.
+
+# Delay values (in high-level observation/frames, ~25 Hz for the default
+# config). 0 must reproduce the unmodified baseline. The first experiment
+# sweeps {0, 1, 2, 4}.
+delays: [0, 1, 2, 4]
+
+# Warm-up policy while fewer than delay_frames + 1 frames have been seen:
+#   repeat_first -> hold the earliest captured frame (chosen for this study)
+#   passthrough  -> use the current frame until the window fills
+warmup_mode: repeat_first
+
+# Which cameras to delay. null => every camera present in the observation.
+cameras: null
+
+# Optional debug aid: also stream the exact frames the policy receives
+# (i.e. the delayed frames) to mp4, under each run's policy_input/ directory.
+# Disabled by default; never affects the ground-truth episode videos.
+record_policy_input: false
